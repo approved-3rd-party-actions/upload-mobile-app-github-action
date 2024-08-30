@@ -46,22 +46,25 @@ curl --silent -X POST https://api.kobiton.com/v1/apps/uploadUrl \
 
 cat ".tmp.upload-url-response.json"
 
-# UPLOAD_URL=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=url\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
-# KAPPPATH=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=appPath\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
+UPLOAD_URL1=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=url\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
+KAPPPATH1=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=appPath\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
 
 UPLOAD_URL=$(jq -r '.url' ".tmp.upload-url-response.json")
 KAPPPATH=$(jq -r '.appPath' ".tmp.upload-url-response.json")
 
-echo "Uploading: ${APP_NAME} (${APP_PATH})"
 echo "URL: ${UPLOAD_URL}"
+
+
+echo "Uploading: ${APP_NAME} (${APP_PATH})"
+echo "URL1: ${UPLOAD_URL1}"
 
 curl --progress-bar -T "${APP_PATH}" \
     -H "Content-Type: application/octet-stream" \
     -H "x-amz-tagging: unsaved=true" \
     -X PUT "${UPLOAD_URL}"
 #--verbose
-
 echo "Processing: ${KAPPPATH}"
+echo "Processing1: ${KAPPPATH1}"
 
 JSON=("{\"filename\":\"${APP_NAME}.${APP_SUFFIX}\",\"appPath\":\"${KAPPPATH}\"}")
 curl -X POST https://api.kobiton.com/v1/apps \
@@ -73,10 +76,13 @@ curl -X POST https://api.kobiton.com/v1/apps \
 echo "Response:"
 cat ".tmp.upload-app-response.json"
 
-# APP_VERSION_ID=$(cat ".tmp.upload-app-response.json" | ack -o --match '(?<=versionId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
+APP_VERSION_ID=$(cat ".tmp.upload-app-response.json" | ack -o --match '(?<=versionId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
 
 # Extracting versionId using jq
-APP_VERSION_ID=$(jq -r '.versionId' ".tmp.upload-app-response.json")
+APP_VERSION_ID1=$(jq -r '.versionId' ".tmp.upload-app-response.json")
+
+echo "app version id: ${APP_VERSION_ID}"
+echo "app version id new: ${APP_VERSION_ID1}"
 
 # Kobiton need some times to update the appId for new appVersion
 sleep 30
@@ -86,10 +92,14 @@ curl -X GET https://api.kobiton.com/v1/app/versions/"$APP_VERSION_ID" \
     -H "Accept: application/json" \
     -o ".tmp.get-appversion-response.json"
 
-# UPLOAD_APP_ID=$(cat ".tmp.get-appversion-response.json" | ack -o --match '(?<=appId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
+UPLOAD_APP_ID=$(cat ".tmp.get-appversion-response.json" | ack -o --match '(?<=appId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
+
+echo "upload app id new: ${UPLOAD_APP_ID}"
 
 # Extracting appId using jq
-UPLOAD_APP_ID=$(jq -r '.appId' ".tmp.get-appversion-response.json")
+UPLOAD_APP_ID1=$(jq -r '.appId' ".tmp.get-appversion-response.json")
+
+echo "upload app id 1 new: ${UPLOAD_APP_ID1}"
 
 curl -X PUT https://api.kobiton.com/v1/apps/"$UPLOAD_APP_ID"/"$APP_ACCESS" \
     -H "Authorization: Basic $BASICAUTH"
