@@ -7,6 +7,15 @@ printf "\n======================================================================
 
 printf "Installing ack...\n"
 
+sudo apt-get install jq
+
+printf "Finish downloading jq\n"
+
+hash jq 2>/dev/null || {
+    echo >&2 "jq required, but it's not installed."
+    exit 1
+}
+
 sudo chmod 755 /usr/local/bin
 sudo bash -c "curl -L https://beyondgrep.com/ack-v3.5.0 >/usr/local/bin/ack"
 sudo chmod 755 /usr/local/bin/ack
