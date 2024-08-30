@@ -20,9 +20,8 @@ hash ack 2>/dev/null || {
     exit 1
 }
 
-BASICAUTH=$("$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
 
-# BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
+BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
 
 # echo "Using Auth: $BASICAUTH"
 
