@@ -20,7 +20,7 @@ hash ack 2>/dev/null || {
 
 BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
 
-echo "Using Auth: $BASICAUTH"
+#echo "Using Auth: $BASICAUTH"
 
 if [ -z "$UPLOAD_APP_ID" ]; then
     JSON=("{\"filename\":\"${APP_NAME}.${APP_SUFFIX}\"}")
