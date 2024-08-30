@@ -7,14 +7,7 @@ printf "\n======================================================================
 
 printf "Installing ack...\n"
 
-sudo apt-get install jq
-
-printf "Finish downloading jq\n"
-
-hash jq 2>/dev/null || {
-    echo >&2 "jq required, but it's not installed."
-    exit 1
-}
+# sudo apt-get install jq
 
 sudo chmod 755 /usr/local/bin
 sudo bash -c "curl -L https://beyondgrep.com/ack-v3.5.0 >/usr/local/bin/ack"
@@ -29,7 +22,7 @@ hash ack 2>/dev/null || {
 
 BASICAUTH=$(echo -n "$KOBI_USERNAME":"$KOBI_API_KEY" | base64)
 
-#echo "Using Auth: $BASICAUTH"
+echo "Using Auth: $BASICAUTH"
 
 if [ -z "$UPLOAD_APP_ID" ]; then
     JSON=("{\"filename\":\"${APP_NAME}.${APP_SUFFIX}\"}")
@@ -46,17 +39,12 @@ curl --silent -X POST https://api.kobiton.com/v1/apps/uploadUrl \
 
 cat ".tmp.upload-url-response.json"
 
-UPLOAD_URL1=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=url\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
-KAPPPATH1=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=appPath\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
-
-UPLOAD_URL=$(jq -r '.url' ".tmp.upload-url-response.json")
-KAPPPATH=$(jq -r '.appPath' ".tmp.upload-url-response.json")
+UPLOAD_URL=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=url\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
+KAPPPATH=$(cat ".tmp.upload-url-response.json" | ack -o --match '(?<=appPath\":")([_\%\&=\?\.aA-zZ0-9:/-]*)')
 
 echo "URL: ${UPLOAD_URL}"
 
-
 echo "Uploading: ${APP_NAME} (${APP_PATH})"
-echo "URL1: ${UPLOAD_URL1}"
 
 curl --progress-bar -T "${APP_PATH}" \
     -H "Content-Type: application/octet-stream" \
@@ -64,7 +52,6 @@ curl --progress-bar -T "${APP_PATH}" \
     -X PUT "${UPLOAD_URL}"
 #--verbose
 echo "Processing: ${KAPPPATH}"
-echo "Processing1: ${KAPPPATH1}"
 
 JSON=("{\"filename\":\"${APP_NAME}.${APP_SUFFIX}\",\"appPath\":\"${KAPPPATH}\"}")
 curl -X POST https://api.kobiton.com/v1/apps \
@@ -95,11 +82,6 @@ curl -X GET https://api.kobiton.com/v1/app/versions/"$APP_VERSION_ID" \
 UPLOAD_APP_ID=$(cat ".tmp.get-appversion-response.json" | ack -o --match '(?<=appId\":)([_\%\&=\?\.aA-zZ0-9:/-]*)')
 
 echo "upload app id new: ${UPLOAD_APP_ID}"
-
-# Extracting appId using jq
-UPLOAD_APP_ID1=$(jq -r '.appId' ".tmp.get-appversion-response.json")
-
-echo "upload app id 1 new: ${UPLOAD_APP_ID1}"
 
 curl -X PUT https://api.kobiton.com/v1/apps/"$UPLOAD_APP_ID"/"$APP_ACCESS" \
     -H "Authorization: Basic $BASICAUTH"
